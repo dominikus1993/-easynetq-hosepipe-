@@ -1,4 +1,4 @@
-module easynetq-hossipe
+module hossipe
 
 go 1.15
 

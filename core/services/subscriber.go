@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
-	"easynetq-hossipe/core/model"
+	"hossipe/core/model"
 )
 
 type ErrorMessageSubscriber interface {
 	Subscribe(c context.Context) chan model.HosepipeMessage
+	Close()
 }
