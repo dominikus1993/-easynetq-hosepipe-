@@ -6,7 +6,8 @@ import (
 	"hossipe/core/model"
 	"hossipe/core/services"
 	"hossipe/infrastructure/rabbitmq"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/streadway/amqp"
 )
@@ -16,51 +17,29 @@ type ErrorMessageSubscriberConfig struct {
 }
 
 type rabbitMqSubscriber struct {
-	client *rabbitmq.RabbitMqClient
-	config *ErrorMessageSubscriberConfig
+	client  *rabbitmq.RabbitMqClient
+	channel *amqp.Channel
+	config  *ErrorMessageSubscriberConfig
 }
 
-func subscribe(rabbitmq *amqp.Connection, stream chan model.HosepipeMessage) {
-	const exchange = "crawl-media"
-	ch, err := rabbitmq.Channel()
+func (subscriber *rabbitMqSubscriber) crateChannel() {
+	ch, err := subscriber.client.Connection.Channel()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln("Error when trying create channel", err)
 	}
-	defer ch.Close()
+	subscriber.channel = ch
+}
 
-	err = ch.ExchangeDeclare(
-		"crawl-media", // name
-		"topic",       // type
-		true,          // durable
-		false,         // auto-deleted
-		false,         // internal
-		false,         // no-wait
-		nil,           // arguments
-	)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+func (subscriber *rabbitMqSubscriber) subscribe(stream chan model.HosepipeMessage) {
+	ch := subscriber.channel
 
 	q, err := ch.QueueDeclare(
-		exchange, // name
-		true,     // durable
-		false,    // delete when usused
-		false,    // exclusive
-		false,    // no-wait
-		nil,      // arguments
-	)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = ch.QueueBind(
-		q.Name,   // queue name
-		"#",      // routing key
-		exchange, // exchange
-		false,
-		nil,
+		subscriber.config.Queue, // name
+		true,                    // durable
+		false,                   // delete when usused
+		false,                   // exclusive
+		false,                   // no-wait
+		nil,                     // arguments
 	)
 
 	if err != nil {
@@ -68,20 +47,20 @@ func subscribe(rabbitmq *amqp.Connection, stream chan model.HosepipeMessage) {
 	}
 
 	msgs, err := ch.Consume(
-		q.Name,    // queue
-		"crawler", // consumer
-		true,      // auto-ack
-		false,     // exclusive
-		false,     // no-local
-		false,     // no-wait
-		nil,       // args
+		q.Name,     // queue
+		"hosepipe", // consumer
+		true,       // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
 	)
 
 	for msg := range msgs {
-		var res model.CrawlWebsite
+		var res model.HosepipeMessage
 		err := json.Unmarshal(msg.Body, &res)
 		if err != nil {
-			log.Println(err)
+			log.Errorln(err)
 		} else {
 			stream <- res
 		}
@@ -91,11 +70,14 @@ func subscribe(rabbitmq *amqp.Connection, stream chan model.HosepipeMessage) {
 }
 
 func (f *rabbitMqSubscriber) Subscribe(c context.Context) chan model.HosepipeMessage {
-	stream := make(chan model.CrawlWebsite)
-
-	go subscribe(f.rabbitmq, stream)
-
+	stream := make(chan model.HosepipeMessage)
+	f.crateChannel()
+	go f.subscribe(stream)
 	return stream
+}
+
+func (f *rabbitMqSubscriber) Close() {
+	f.channel.Close()
 }
 
 func NewrRabbitMqSubscriber(client *rabbitmq.RabbitMqClient, cfg *ErrorMessageSubscriberConfig) services.ErrorMessageSubscriber {

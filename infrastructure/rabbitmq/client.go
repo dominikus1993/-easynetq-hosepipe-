@@ -6,7 +6,6 @@ import (
 
 type RabbitMqClient struct {
 	Connection *amqp.Connection
-	Channel    *amqp.Channel
 }
 
 func NewRabbitMqClient(connStr string) (*RabbitMqClient, error) {
@@ -14,9 +13,9 @@ func NewRabbitMqClient(connStr string) (*RabbitMqClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	ch, err := conn.Channel()
-	if err != nil {
-		return nil, err
-	}
-	return &RabbitMqClient{Connection: conn, Channel: ch}, nil
+	return &RabbitMqClient{Connection: conn}, nil
+}
+
+func (client *RabbitMqClient) Close() {
+	client.Connection.Close()
 }
