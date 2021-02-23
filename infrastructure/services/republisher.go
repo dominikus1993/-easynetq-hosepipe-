@@ -23,15 +23,8 @@ func (publisher *rabbitMqPublisher) crateChannel() {
 	publisher.channel = ch
 }
 
-func publish(publisher *rabbitMqPublisher, msg model.HosepipeMessage) {
+func (f *rabbitMqPublisher) RePublish(msg model.HosepipeMessage, c context.Context) {
 
-}
-
-func (f *rabbitMqPublisher) RePublish(msgs chan model.HosepipeMessage, c context.Context) {
-	f.crateChannel()
-	for msg := range msgs {
-		go publish(f, msg)
-	}
 }
 
 func (f *rabbitMqPublisher) Close() {
@@ -39,5 +32,7 @@ func (f *rabbitMqPublisher) Close() {
 }
 
 func NewrRabbitMqPublisher(client *rabbitmq.RabbitMqClient, cfg *ErrorMessageSubscriberConfig) services.ErrorMessagePublisher {
-	return &rabbitMqPublisher{client: client}
+	publisher := &rabbitMqPublisher{client: client}
+	publisher.crateChannel()
+	return publisher
 }
