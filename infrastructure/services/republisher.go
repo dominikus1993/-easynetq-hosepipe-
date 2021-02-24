@@ -24,7 +24,11 @@ func (publisher *rabbitMqPublisher) crateChannel() {
 }
 
 func (f *rabbitMqPublisher) RePublish(msg model.HosepipeMessage, c context.Context) {
-
+	body, err := msg.GetMessageBody()
+	if err != nil {
+		log.WithFields(log.Fields{"Exchange": msg.Exchange, "Queue": msg.Queue, "Topic": msg.RoutingKey, "Exception": msg.Exception}).Errorln("Error when trying resend message", err)
+	}
+	f.channel.Publish("", msg.RoutingKey, false, false, amqp.Publishing{ContentType: "application/json", Body: body})
 }
 
 func (f *rabbitMqPublisher) Close() {
