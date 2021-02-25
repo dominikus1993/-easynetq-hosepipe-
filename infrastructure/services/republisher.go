@@ -29,10 +29,27 @@ func (f *rabbitMqPublisher) RePublish(msg model.HosepipeMessage, c context.Conte
 		log.WithFields(log.Fields{"Exchange": msg.Exchange, "Queue": msg.Queue, "Topic": msg.RoutingKey, "Exception": msg.Exception}).Errorln("Error when trying resend message", err)
 	} else {
 		props := msg.BasicProperties
-		rMsg := amqp.Publishing{ContentType: "application/json", CorrelationId: props.CorrelationID, Type: props.Type, Headers: props.Headers, Body: body}
-		f.channel.Publish("", msg.RoutingKey, false, false, rMsg)
+
+		if checkIfShouldRepublishMessage(props.Headers) {
+			log.Traceln("Message published")
+			rMsg := amqp.Publishing{ContentType: "application/json", CorrelationId: props.CorrelationID, Type: props.Type, Headers: props.Headers, Body: body}
+			f.channel.Publish("", msg.RoutingKey, false, false, rMsg)
+		}
+
 	}
 
+}
+
+func checkIfShouldRepublishMessage(headers map[string]interface{}) bool {
+	if val, ok := headers["retry"].(int); ok {
+		if val < 10 {
+			headers["retry"] = val + 1
+			return true
+		}
+		return false
+	}
+	headers["retry"] = 1
+	return true
 }
 
 func (f *rabbitMqPublisher) Close() {
