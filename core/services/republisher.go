@@ -6,6 +6,6 @@ import (
 )
 
 type ErrorMessagePublisher interface {
-	RePublish(msg model.HosepipeMessage, c context.Context)
+	RePublish(msg model.HosepipeMessage, c context.Context) error
 	Close()
 }

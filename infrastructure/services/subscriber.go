@@ -60,7 +60,7 @@ func (subscriber *rabbitMqSubscriber) subscribe(stream chan model.HosepipeMessag
 		var res model.HosepipeMessage
 		err := json.Unmarshal(msg.Body, &res)
 		if err != nil {
-			log.Errorln(err)
+			log.WithError(err).Errorln("Error in subscribe method")
 		} else {
 			stream <- res
 		}
