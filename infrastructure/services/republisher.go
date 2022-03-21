@@ -9,8 +9,8 @@ import (
 
 	"github.com/dominikus1993/easynetq-hosepipe/infrastructure/rabbitmq"
 
+	amqp "github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
 )
 
 type rabbitMqPublisher struct {

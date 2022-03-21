@@ -3,8 +3,8 @@ module github.com/dominikus1993/easynetq-hosepipe
 go 1.18
 
 require (
+	github.com/rabbitmq/amqp091-go v1.3.0
 	github.com/sirupsen/logrus v1.8.0
-	github.com/streadway/amqp v1.0.0
 )
 
 require (
