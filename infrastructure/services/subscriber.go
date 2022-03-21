@@ -3,9 +3,10 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"hossipe/core/model"
-	"hossipe/core/services"
-	"hossipe/infrastructure/rabbitmq"
+
+	"github.com/dominikus1993/easynetq-hosepipe/core/model"
+	"github.com/dominikus1993/easynetq-hosepipe/core/services"
+	"github.com/dominikus1993/easynetq-hosepipe/infrastructure/rabbitmq"
 
 	log "github.com/sirupsen/logrus"
 

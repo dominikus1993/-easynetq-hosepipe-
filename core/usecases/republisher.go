@@ -2,9 +2,10 @@ package usecases
 
 import (
 	"context"
-	"hossipe/core/model"
-	"hossipe/core/services"
 	"sync"
+
+	"github.com/dominikus1993/easynetq-hosepipe/core/model"
+	"github.com/dominikus1993/easynetq-hosepipe/core/services"
 
 	log "github.com/sirupsen/logrus"
 )

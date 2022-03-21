@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"hossipe/core/model"
+
+	"github.com/dominikus1993/easynetq-hosepipe/core/model"
 )
 
 type ErrorMessageSubscriber interface {
