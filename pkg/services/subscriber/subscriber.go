@@ -4,31 +4,18 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/dominikus1993/easynetq-hosepipe/core/model"
-	"github.com/dominikus1993/easynetq-hosepipe/core/services"
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/config"
+	"github.com/dominikus1993/easynetq-hosepipe/pkg/data"
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/rabbitmq"
-
 	log "github.com/sirupsen/logrus"
-
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type rabbitMqSubscriber struct {
-	client  *rabbitmq.RabbitMqClient
-	channel *amqp.Channel
-	config  *config.ErrorMessageSubscriberConfig
+	client rabbitmq.RabbitMqClient
+	config *config.ErrorMessageSubscriberConfig
 }
 
-func (subscriber *rabbitMqSubscriber) crateChannel() {
-	ch, err := subscriber.client.Connection.Channel()
-	if err != nil {
-		log.Fatalln("Error when trying create channel", err)
-	}
-	subscriber.channel = ch
-}
-
-func (subscriber *rabbitMqSubscriber) subscribe(stream chan model.HosepipeMessage) {
+func (subscriber *rabbitMqSubscriber) subscribe(stream chan data.HosepipeMessage) {
 	ch := subscriber.channel
 
 	q, err := ch.QueueDeclare(
@@ -74,10 +61,6 @@ func (f *rabbitMqSubscriber) Subscribe(c context.Context) chan model.HosepipeMes
 	return stream
 }
 
-func (f *rabbitMqSubscriber) Close() {
-	f.channel.Close()
-}
-
-func NewrRabbitMqSubscriber(client *rabbitmq.RabbitMqClient, cfg *config.ErrorMessageSubscriberConfig) services.ErrorMessageSubscriber {
+func NewrRabbitMqSubscriber(client *rabbitmq.RabbitMqClient, cfg *config.ErrorMessageSubscriberConfig) *rabbitMqSubscriber {
 	return &rabbitMqSubscriber{client: client, config: cfg}
 }
