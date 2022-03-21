@@ -1,4 +1,4 @@
-package services
+package subscriber
 
 import (
 	"context"
@@ -6,21 +6,18 @@ import (
 
 	"github.com/dominikus1993/easynetq-hosepipe/core/model"
 	"github.com/dominikus1993/easynetq-hosepipe/core/services"
-	"github.com/dominikus1993/easynetq-hosepipe/infrastructure/rabbitmq"
+	"github.com/dominikus1993/easynetq-hosepipe/pkg/config"
+	"github.com/dominikus1993/easynetq-hosepipe/pkg/rabbitmq"
 
 	log "github.com/sirupsen/logrus"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type ErrorMessageSubscriberConfig struct {
-	Queue string
-}
-
 type rabbitMqSubscriber struct {
 	client  *rabbitmq.RabbitMqClient
 	channel *amqp.Channel
-	config  *ErrorMessageSubscriberConfig
+	config  *config.ErrorMessageSubscriberConfig
 }
 
 func (subscriber *rabbitMqSubscriber) crateChannel() {
@@ -81,6 +78,6 @@ func (f *rabbitMqSubscriber) Close() {
 	f.channel.Close()
 }
 
-func NewrRabbitMqSubscriber(client *rabbitmq.RabbitMqClient, cfg *ErrorMessageSubscriberConfig) services.ErrorMessageSubscriber {
+func NewrRabbitMqSubscriber(client *rabbitmq.RabbitMqClient, cfg *config.ErrorMessageSubscriberConfig) services.ErrorMessageSubscriber {
 	return &rabbitMqSubscriber{client: client, config: cfg}
 }
