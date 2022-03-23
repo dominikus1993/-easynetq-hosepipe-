@@ -21,7 +21,7 @@ type RabbitMqPublisher interface {
 }
 
 type RabbitMqSubscriber interface {
-	Subscribe(ctx context.Context, exchangeName, queue, topic string) chan data.HosepipeMessage
+	Subscribe(ctx context.Context, exchangeName, queue, topic string) <-chan *data.HosepipeMessage
 	CloseChannel()
 }
 
@@ -124,16 +124,21 @@ func (client *rabbitMqSubscriber) Subscribe(ctx context.Context, exchangeName, q
 	}
 
 	go func(stream chan<- *data.HosepipeMessage) {
-		for msg := range msgs {
-			var res data.HosepipeMessage
-			err := json.Unmarshal(msg.Body, &res)
-			if err != nil {
-				log.WithError(err).Errorln("Error in subscribe method")
-			} else {
-				stream <- &res
+		defer close(stream)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg := <-msgs:
+				var data data.HosepipeMessage
+				err := json.Unmarshal(msg.Body, &data)
+				if err != nil {
+					log.WithError(err).Fatalln("error when unmarshaling message")
+					continue
+				}
+				stream <- &data
 			}
 		}
-		close(stream)
 	}(res)
 	return res
 }

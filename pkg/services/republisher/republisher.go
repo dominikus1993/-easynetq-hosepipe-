@@ -3,7 +3,6 @@ package republisher
 import (
 	"context"
 
-	"github.com/dominikus1993/easynetq-hosepipe/pkg/config"
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/data"
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/rabbitmq"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -11,7 +10,7 @@ import (
 )
 
 type rabbitMqPublisher struct {
-	client rabbitmq.RabbitMqClient
+	client rabbitmq.RabbitMqPublisher
 }
 
 func (f *rabbitMqPublisher) RePublish(ctx context.Context, msg data.HosepipeMessage, c context.Context) error {
@@ -45,6 +44,6 @@ func checkIfShouldRepublishMessage(headers map[string]interface{}) (bool, map[st
 	return true, headers
 }
 
-func NewrRabbitMqPublisher(client rabbitmq.RabbitMqClient, cfg *config.ErrorMessageSubscriberConfig) *rabbitMqPublisher {
+func NewrRabbitMqPublisher(client rabbitmq.RabbitMqPublisher) *rabbitMqPublisher {
 	return &rabbitMqPublisher{client: client}
 }
