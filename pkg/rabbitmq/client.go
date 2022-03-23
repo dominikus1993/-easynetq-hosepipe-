@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/data"
@@ -92,6 +93,47 @@ func NewRabbitMqSubscriber(client RabbitMqClient) (*rabbitMqSubscriber, error) {
 	return &rabbitMqSubscriber{channel: channel}, nil
 }
 
-func (client *rabbitMqPublisher) Subscribe(ctx context.Context, exchangeName, queue, topic string) chan data.HosepipeMessage {
+func (client *rabbitMqSubscriber) Subscribe(ctx context.Context, exchangeName, queue, topic string) <-chan *data.HosepipeMessage {
+	res := make(chan *data.HosepipeMessage)
 
+	q, err := client.channel.QueueDeclare(
+		queue, // name
+		true,  // durable
+		false, // delete when usused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+
+	if err != nil {
+		log.WithError(err).Fatalln("error when declaring queue")
+	}
+
+	msgs, err := client.channel.Consume(
+		q.Name,     // queue
+		"hosepipe", // consumer
+		true,       // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
+	)
+
+	if err != nil {
+		log.WithError(err).Fatalln("error when consuming queue")
+	}
+
+	go func(stream chan<- *data.HosepipeMessage) {
+		for msg := range msgs {
+			var res data.HosepipeMessage
+			err := json.Unmarshal(msg.Body, &res)
+			if err != nil {
+				log.WithError(err).Errorln("Error in subscribe method")
+			} else {
+				stream <- &res
+			}
+		}
+		close(stream)
+	}(res)
+	return res
 }
