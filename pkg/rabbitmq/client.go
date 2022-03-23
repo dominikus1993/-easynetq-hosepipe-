@@ -21,7 +21,7 @@ type RabbitMqPublisher interface {
 }
 
 type RabbitMqSubscriber interface {
-	Subscribe(ctx context.Context, exchangeName, queue, topic string) <-chan *data.HosepipeMessage
+	Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage
 	CloseChannel()
 }
 
@@ -93,7 +93,7 @@ func NewRabbitMqSubscriber(client RabbitMqClient) (*rabbitMqSubscriber, error) {
 	return &rabbitMqSubscriber{channel: channel}, nil
 }
 
-func (client *rabbitMqSubscriber) Subscribe(ctx context.Context, exchangeName, queue, topic string) <-chan *data.HosepipeMessage {
+func (client *rabbitMqSubscriber) Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage {
 	res := make(chan *data.HosepipeMessage)
 
 	q, err := client.channel.QueueDeclare(

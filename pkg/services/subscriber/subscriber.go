@@ -14,8 +14,7 @@ type rabbitMqSubscriber struct {
 }
 
 func (f *rabbitMqSubscriber) Subscribe(c context.Context) <-chan *data.HosepipeMessage {
-
-	return f.client.Subscribe(c, f.config., f.config.Queue, f.config.Topic)
+	return f.client.Subscribe(c, f.config.Queue)
 }
 
 func NewrRabbitMqSubscriber(client rabbitmq.RabbitMqSubscriber, cfg *config.ErrorMessageSubscriberConfig) *rabbitMqSubscriber {
