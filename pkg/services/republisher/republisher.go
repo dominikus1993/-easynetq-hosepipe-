@@ -13,11 +13,11 @@ type rabbitMqPublisher struct {
 	client rabbitmq.RabbitMqPublisher
 }
 
-func (f *rabbitMqPublisher) RePublish(ctx context.Context, msg data.HosepipeMessage, c context.Context) error {
+func (f *rabbitMqPublisher) RePublish(ctx context.Context, msg *data.HosepipeMessage) error {
 	body, err := msg.GetMessageBody()
 	if err != nil {
 		fields := log.Fields{"Exchange": msg.Exchange, "Queue": msg.Queue, "Topic": msg.RoutingKey, "Exception": msg.Exception}
-		log.WithFields(fields).WithError(err).WithContext(c).Errorln("Error when trying resend message")
+		log.WithFields(fields).WithError(err).WithContext(ctx).Errorln("Error when trying resend message")
 		return err
 	}
 
@@ -25,7 +25,7 @@ func (f *rabbitMqPublisher) RePublish(ctx context.Context, msg data.HosepipeMess
 
 	shouldRepublish, newHeaders := checkIfShouldRepublishMessage(props.Headers)
 	if shouldRepublish {
-		log.WithContext(c).Traceln("Message published")
+		log.WithContext(ctx).Traceln("Message published")
 		rMsg := amqp.Publishing{ContentType: "application/json", CorrelationId: props.CorrelationID, Type: props.Type, Headers: newHeaders, Body: body}
 		return f.client.Publish(ctx, msg.Exchange, msg.RoutingKey, rMsg)
 	}

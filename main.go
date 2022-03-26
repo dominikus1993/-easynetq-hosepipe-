@@ -5,6 +5,7 @@ import (
 	"flag"
 
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/rabbitmq"
+	"github.com/dominikus1993/easynetq-hosepipe/pkg/services/republisher"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -33,15 +34,17 @@ func main() {
 		log.WithError(err).Panicln("error when creating subscriber")
 	}
 	defer subscriber.CloseChannel()
-	republiser, err := rabbitmq.NewRabbitMqPublisher(client)
+	publisher, err := rabbitmq.NewRabbitMqPublisher(client)
 	if err != nil {
 		log.WithError(err).Panicln("error when creating publisher")
 	}
-	defer republiser.CloseChannel()
+	defer publisher.CloseChannel()
+
+	rep := republisher.NewrRabbitMqPublisher(publisher)
 
 	ctx := context.Background()
 	for rabbitError := range subscriber.Subscribe(ctx, "easynetq-hosepipe") {
-		republiser.Publish(ctx, "easynetq-hosepipe", rabbitError.Topic, rabbitError.Message)
+		rep.RePublish(ctx, rabbitError)
 	}
 }
 
