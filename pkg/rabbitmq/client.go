@@ -2,10 +2,7 @@ package rabbitmq
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
-	"github.com/dominikus1993/easynetq-hosepipe/pkg/data"
 	amqp "github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
 )
@@ -13,16 +10,6 @@ import (
 type RabbitMqClient interface {
 	CreateChannel() (*amqp.Channel, error)
 	Close()
-}
-
-type RabbitMqPublisher interface {
-	Publish(ctx context.Context, exchangeName string, topic string, msg amqp.Publishing) error
-	CloseChannel()
-}
-
-type RabbitMqSubscriber interface {
-	Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage
-	CloseChannel()
 }
 
 type rabbitMqClient struct {
@@ -58,87 +45,4 @@ func DeclareExchange(ctx context.Context, channel *amqp.Channel, exchangeName st
 		false,        // no-wait
 		nil,          // arguments
 	)
-}
-
-type rabbitMqPublisher struct {
-	channel *amqp.Channel
-}
-
-func NewRabbitMqPublisher(client RabbitMqClient) (*rabbitMqPublisher, error) {
-	channel, err := client.CreateChannel()
-	if err != nil {
-		return nil, fmt.Errorf("error when creating channel %w", err)
-	}
-	return &rabbitMqPublisher{channel: channel}, nil
-}
-
-func (client *rabbitMqPublisher) Publish(ctx context.Context, exchangeName string, topic string, msg amqp.Publishing) error {
-	err := DeclareExchange(ctx, client.channel, exchangeName)
-	if err != nil {
-		return fmt.Errorf("error when declare exchange %w", err)
-	}
-
-	return client.channel.Publish(exchangeName, topic, false, false, msg)
-}
-
-type rabbitMqSubscriber struct {
-	channel *amqp.Channel
-}
-
-func NewRabbitMqSubscriber(client RabbitMqClient) (*rabbitMqSubscriber, error) {
-	channel, err := client.CreateChannel()
-	if err != nil {
-		return nil, fmt.Errorf("error when creating channel %w", err)
-	}
-	return &rabbitMqSubscriber{channel: channel}, nil
-}
-
-func (client *rabbitMqSubscriber) Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage {
-	res := make(chan *data.HosepipeMessage)
-
-	q, err := client.channel.QueueDeclare(
-		queue, // name
-		true,  // durable
-		false, // delete when usused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
-
-	if err != nil {
-		log.WithError(err).Fatalln("error when declaring queue")
-	}
-
-	msgs, err := client.channel.Consume(
-		q.Name,     // queue
-		"hosepipe", // consumer
-		true,       // auto-ack
-		false,      // exclusive
-		false,      // no-local
-		false,      // no-wait
-		nil,        // args
-	)
-
-	if err != nil {
-		log.WithError(err).Fatalln("error when consuming queue")
-	}
-
-	go func(stream chan<- *data.HosepipeMessage) {
-		defer close(stream)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case msg := <-msgs:
-				var data data.HosepipeMessage
-				err := json.Unmarshal(msg.Body, &data)
-				if err != nil {
-					log.WithError(err).Fatalln("error when unmarshaling message")
-					continue
-				}
-				stream <- &data
-			}
-		}
-	}(res)
-	return res
 }
