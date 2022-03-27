@@ -7,16 +7,16 @@ import (
 )
 
 type testData struct {
-	headers         map[string]interface{}
+	headers         RabbitMqHeaders
 	shouldRepublish bool
-	newHeaders      map[string]interface{}
+	newHeaders      RabbitMqHeaders
 }
 
 func TestCheckIfShouldRepublishMessage(t *testing.T) {
 	testData := []testData{
-		{headers: map[string]interface{}{"retry": 1}, shouldRepublish: true, newHeaders: map[string]interface{}{"retry": 2}},
-		{headers: map[string]interface{}{"retry": 10}, shouldRepublish: false, newHeaders: map[string]interface{}{"retry": 10}},
-		{headers: map[string]interface{}{}, shouldRepublish: true, newHeaders: map[string]interface{}{"retry": 1}},
+		{headers: RabbitMqHeaders{"retry": 1}, shouldRepublish: true, newHeaders: RabbitMqHeaders{"retry": 2}},
+		{headers: RabbitMqHeaders{"retry": 10}, shouldRepublish: false, newHeaders: RabbitMqHeaders{"retry": 10}},
+		{headers: RabbitMqHeaders{}, shouldRepublish: true, newHeaders: RabbitMqHeaders{"retry": 1}},
 	}
 	for _, tt := range testData {
 		t.Run("", func(t *testing.T) {

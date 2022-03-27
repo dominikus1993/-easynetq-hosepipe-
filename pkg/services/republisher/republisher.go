@@ -9,6 +9,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type RabbitMqHeaders = map[string]interface{}
+
+type RabbitMqRePublisher interface {
+	RePublish(ctx context.Context, msg *data.HosepipeMessage) error
+}
+
 type rabbitMqPublisher struct {
 	client rabbitmq.RabbitMqPublisher
 }
@@ -32,7 +38,7 @@ func (f *rabbitMqPublisher) RePublish(ctx context.Context, msg *data.HosepipeMes
 	return nil
 }
 
-func checkIfShouldRepublishMessage(headers map[string]interface{}) (bool, map[string]interface{}) {
+func checkIfShouldRepublishMessage(headers RabbitMqHeaders) (bool, RabbitMqHeaders) {
 	if val, ok := headers["retry"].(int); ok {
 		if val < 10 {
 			headers["retry"] = val + 1

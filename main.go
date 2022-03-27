@@ -2,29 +2,44 @@ package main
 
 import (
 	"context"
-	"flag"
 
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/rabbitmq"
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/services/republisher"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-var amqpConnection string
+var configuration HosepipeConfig
+
+type HosepipeConfig struct {
+	AmqpConnection string `mapstructure:"AMQP_CONNECTION"`
+}
+
+func LoadConfig(path string) (config HosepipeConfig, err error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	err = viper.Unmarshal(&config)
+	return
+}
 
 func init() {
-	flag.String("rabbitmq", "amqp://guest:guest@localhost:5672/", "help message for flagname")
-
-	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-	pflag.Parse()
-	viper.BindPFlags(pflag.CommandLine)
-
-	amqpConnection = viper.GetString("rabbitmq")
+	cfg, err := LoadConfig(".")
+	if err != nil {
+		log.WithError(err).Fatalln("error when loading config")
+	}
+	configuration = cfg
 }
 
 func main() {
-	client, err := rabbitmq.NewRabbitMqClient(amqpConnection)
+	client, err := rabbitmq.NewRabbitMqClient(configuration.AmqpConnection)
 	if err != nil {
 		log.WithError(err).Panicln("error when creating client")
 	}
@@ -43,11 +58,15 @@ func main() {
 	rep := republisher.NewrRabbitMqPublisher(publisher)
 
 	ctx := context.Background()
-	for rabbitError := range subscriber.Subscribe(ctx, "easynetq-hosepipe") {
-		rep.RePublish(ctx, rabbitError)
-	}
+	StartRepublish(ctx, subscriber, rep)
 }
 
-func modify(headers map[string]interface{}) {
-	headers["21"] = 2112
+func StartRepublish(ctx context.Context, subscriber rabbitmq.RabbitMqSubscriber, republisher republisher.RabbitMqRePublisher) {
+	log.Infoln("Start")
+	for rabbitError := range subscriber.Subscribe(ctx, "easynetq-hosepipe") {
+		err := republisher.RePublish(ctx, rabbitError)
+		if err != nil {
+			log.WithError(err).Panicln("error when republishing")
+		}
+	}
 }
