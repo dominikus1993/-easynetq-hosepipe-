@@ -13,6 +13,7 @@ var configuration HosepipeConfig
 
 type HosepipeConfig struct {
 	AmqpConnection string `mapstructure:"AMQP_CONNECTION"`
+	ErrorQueue     string `mapstructure:"ERROR_QUEUE"`
 }
 
 func LoadConfig(path string) (config HosepipeConfig, err error) {
@@ -63,7 +64,7 @@ func main() {
 
 func StartRepublish(ctx context.Context, subscriber rabbitmq.RabbitMqSubscriber, republisher republisher.RabbitMqRePublisher) {
 	log.Infoln("Start")
-	for rabbitError := range subscriber.Subscribe(ctx, "easynetq-hosepipe") {
+	for rabbitError := range subscriber.Subscribe(ctx, configuration.ErrorQueue) {
 		err := republisher.RePublish(ctx, rabbitError)
 		if err != nil {
 			log.WithError(err).Panicln("error when republishing")
