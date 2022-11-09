@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <UserSecretsId>dotnet-EasyNetQ.HosePipe-6f926f71-1bd1-452b-89e4-65ccd363f916</UserSecretsId>
+  </PropertyGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
