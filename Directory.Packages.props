@@ -4,6 +4,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageVersion Include="RabbitMQ.Client" Version="6.4.0" />
+        <PackageVersion Include="EasyNetQ" Version="7.3.0" />
         <PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
         <PackageVersion Include="xunit.assert" Version="2.4.1" />
         <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
