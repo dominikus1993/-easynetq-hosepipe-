@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Worker">
   <PropertyGroup>
-     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <UserSecretsId>dotnet-EasyNetQ.HosePipe-6f926f71-1bd1-452b-89e4-65ccd363f916</UserSecretsId>
+      <ServerGarbageCollection>true</ServerGarbageCollection>
+      <UserSecretsId>dotnet-EasyNetQ.HosePipe-6f926f71-1bd1-452b-89e4-65ccd363f916</UserSecretsId>
+      <PublishAot>true</PublishAot>
+      <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:7.0-alpine</ContainerBaseImage>
+      <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+      <PublishProfile>DefaultContainer</PublishProfile>
   </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="EasyNetQ" />
