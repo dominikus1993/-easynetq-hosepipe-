@@ -9,7 +9,8 @@ public static class Connection
         ArgumentNullException.ThrowIfNull(url);
         var connectionFactory = new ConnectionFactory
         {
-            Uri = new Uri(url)
+            Uri = new Uri(url),
+            DispatchConsumersAsync = true,
         };
 
         return connectionFactory.CreateConnection();
