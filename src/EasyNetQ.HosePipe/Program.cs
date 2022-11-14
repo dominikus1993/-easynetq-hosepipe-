@@ -1,8 +1,12 @@
 using EasyNetQ.HosePipe;
+using EasyNetQ.HosePipe.Infrastructure.RabbitMq;
+
+using RabbitMQ.Client;
 
 IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices(services =>
+    .ConfigureServices((ctx, services) =>
     {
+        services.AddSingleton<IConnection>(Connection.FromUrl(ctx.Configuration["RabbitMq:Url"]));
         services.AddHostedService<Worker>();
     })
     .Build();
