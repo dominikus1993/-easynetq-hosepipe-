@@ -4,9 +4,9 @@
     "net7.0": {
       "EasyNetQ": {
         "type": "Direct",
-        "requested": "[7.3.0, )",
-        "resolved": "7.3.0",
-        "contentHash": "2dLan3/usuXkVrfrIXn61iBjo/SA04itIzLz4t3A1DSCMv9EqQu6uFA057ZoyYTV1aTMFlaMIAWfYUSQof6NmQ==",
+        "requested": "[7.3.1, )",
+        "resolved": "7.3.1",
+        "contentHash": "f1z7o6AVKBYiO+Mj61zryFd3CZgdh1twzXM+taA48gUvihvPWWe6yzpWMwh6pcECfMSVZwmQVh0XT/jbVDIlNg==",
         "dependencies": {
           "RabbitMQ.Client": "6.4.0"
         }
@@ -306,18 +306,6 @@
         "type": "Transitive",
         "resolved": "4.7.1",
         "contentHash": "6akRtHK/wab3246t4p5v3HQrtQk8LboOt5T4dtpNgsp3zvDeM4/Gx8V12t0h+c/W9/enUrilk8n6EQqdQorZAA=="
-      }
-    },
-    "net7.0/linux-x64": {
-      "System.Diagnostics.EventLog": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "eUDP47obqQm3SFJfP6z+Fx2nJ4KKTQbXB4Q9Uesnzw9SbYdhjyoGXuvDn/gEmFY6N5Z3bFFbpAQGA7m6hrYJCw=="
-      },
-      "System.Text.Encodings.Web": {
-        "type": "Transitive",
-        "resolved": "7.0.0",
-        "contentHash": "OP6umVGxc0Z0MvZQBVigj4/U31Pw72ITihDWP9WiWDm+q5aoe0GaJivsfYGq53o6dxH7DcXWiCTl7+0o2CGdmg=="
       }
     }
   }
