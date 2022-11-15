@@ -9,7 +9,4 @@
         <PackageReference Include="RabbitMQ.Client" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Infrastructure\RabbitMq" />
-    </ItemGroup>
 </Project>
