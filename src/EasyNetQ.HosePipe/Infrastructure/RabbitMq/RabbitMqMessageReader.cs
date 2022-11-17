@@ -32,7 +32,7 @@ public sealed class RabbitMqMessageReader : IMessageReader, IDisposable
         _model = connection.CreateModel();
     }
 
-    public async IAsyncEnumerable<HosepipeMessage> ReadMessages(Queue queue, CancellationToken cancellationToken)
+    public IAsyncEnumerable<HosepipeMessage> ReadMessages(Queue queue, CancellationToken cancellationToken)
     {
         try
         {
@@ -41,7 +41,7 @@ public sealed class RabbitMqMessageReader : IMessageReader, IDisposable
         catch (Exception e)
         {
             _logger.LogError(e, "RabbitMq Queue declaration error");
-            yield break;
+            return AsyncEnumerable.Empty<HosepipeMessage>();
         }
         var channel = Channel.CreateUnbounded<HosepipeMessage>(new UnboundedChannelOptions() { SingleWriter = true, SingleReader = false});
         

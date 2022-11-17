@@ -10,5 +10,6 @@
         <PackageReference Include="OneOf.SourceGenerator" />
         <PackageReference Include="RabbitMQ.Client" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
+        <PackageReference Include="System.Linq.Async" />
     </ItemGroup>
 </Project>
