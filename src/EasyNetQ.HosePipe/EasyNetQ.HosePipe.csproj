@@ -6,6 +6,8 @@
   </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="EasyNetQ" />
+        <PackageReference Include="OneOf" />
+        <PackageReference Include="OneOf.SourceGenerator" />
         <PackageReference Include="RabbitMQ.Client" />
         <PackageReference Include="Microsoft.Extensions.Hosting" />
     </ItemGroup>

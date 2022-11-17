@@ -40,6 +40,18 @@
           "Microsoft.Extensions.Options": "7.0.0"
         }
       },
+      "OneOf": {
+        "type": "Direct",
+        "requested": "[3.0.223, )",
+        "resolved": "3.0.223",
+        "contentHash": "YWabiHBFfDdKIO7/TEa72mARVVo5u5FqFnfXuTqjIupMvJlhoH8d0m4uKtczaINuT0vGR1qlXJayeU6bTw5myg=="
+      },
+      "OneOf.SourceGenerator": {
+        "type": "Direct",
+        "requested": "[3.0.223, )",
+        "resolved": "3.0.223",
+        "contentHash": "cEhMSGyKgs14cuBS3b1n1DGXSlMw3Tk5s2O03VGKU8hHspBud/+UdI9Sy849DQ1cygQoDmm3LUj02ArMv+FIjQ=="
+      },
       "RabbitMQ.Client": {
         "type": "Direct",
         "requested": "[6.4.0, )",
