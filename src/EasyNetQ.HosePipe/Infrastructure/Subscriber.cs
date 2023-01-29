@@ -2,7 +2,7 @@ using RabbitMQ.Client;
 
 namespace EasyNetQ.HosePipe.Infrastructure;
 
-public class Subscriber : BackgroundService
+public sealed class Subscriber : BackgroundService
 {
     private readonly IModel _subscriptionModel;
     private readonly IModel _publisherModel;
@@ -17,20 +17,12 @@ public class Subscriber : BackgroundService
         throw new NotImplementedException();
     }
 
-    protected virtual void Dispose(bool disposing)
+    public override void Dispose()
     {
-        if (disposing)
-        {
-            _subscriptionModel.Close();
-            _subscriptionModel.Dispose();
-            _publisherModel.Close();
-            _publisherModel.Dispose();
-        }
-    }
-
-    public sealed override void Dispose()
-    {
-        Dispose(true);
+        _subscriptionModel.Close();
+        _subscriptionModel.Dispose();
+        _publisherModel.Close();
+        _publisherModel.Dispose();
         GC.SuppressFinalize(this);
     }
 }
