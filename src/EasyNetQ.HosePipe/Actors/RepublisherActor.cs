@@ -34,8 +34,7 @@ public sealed class RepublisherActor : ReceiveActor
     private void OnReady()
     {
         Receive<TryRepublish>(message => {
-            _log.Info("Received String message: {0}", message);
-            Sender.Tell(message);
+            _log.Info("received message");
         });
     }
 
