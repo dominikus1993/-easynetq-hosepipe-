@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using RabbitMQ.Client;
 
 namespace EasyNetQ.HosePipe.Infrastructure.RabbitMq;
