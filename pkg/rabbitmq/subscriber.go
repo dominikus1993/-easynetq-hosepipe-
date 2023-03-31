@@ -2,13 +2,15 @@ package rabbitmq
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/data"
+	jsoniter "github.com/json-iterator/go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type RabbitMqSubscriber interface {
 	Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage

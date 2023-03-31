@@ -26,12 +26,7 @@ func NewRabbitMqPublisher(client RabbitMqClient) (*rabbitMqPublisher, error) {
 }
 
 func (client *rabbitMqPublisher) Publish(ctx context.Context, exchangeName string, topic string, msg amqp.Publishing) error {
-	err := DeclareExchange(ctx, client.channel, exchangeName)
-	if err != nil {
-		return fmt.Errorf("error when declare exchange %w", err)
-	}
-
-	return client.channel.Publish(exchangeName, topic, false, false, msg)
+	return client.channel.PublishWithContext(ctx, exchangeName, topic, false, false, msg)
 }
 
 func (client *rabbitMqPublisher) CloseChannel() {
