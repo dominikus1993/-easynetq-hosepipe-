@@ -3,10 +3,8 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/data"
-	amqp "github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -14,48 +12,22 @@ import (
 
 type RabbitMqSubscriber interface {
 	Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage
-	Close()
 }
 
 type rabbitMqSubscriber struct {
-	channel *amqp.Channel
+	client RabbitMqClient
 }
 
-func NewRabbitMqSubscriber(client RabbitMqClient) (*rabbitMqSubscriber, error) {
-	channel, err := client.CreateChannel()
-	if err != nil {
-		return nil, fmt.Errorf("error when creating channel %w", err)
-	}
-	return &rabbitMqSubscriber{channel: channel}, nil
+func NewRabbitMqSubscriber(client RabbitMqClient) *rabbitMqSubscriber {
+	return &rabbitMqSubscriber{client: client}
 }
 
-func (client *rabbitMqSubscriber) Close() {
-	err := client.channel.Close()
-	if err != nil {
-		log.WithError(err).Fatalln("error when closing channel")
-	}
-}
-
-func (client *rabbitMqSubscriber) Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage {
+func (subscriber *rabbitMqSubscriber) Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage {
 	res := make(chan *data.HosepipeMessage)
-
-	q, err := client.channel.QueueDeclare(
-		queue, // name
-		true,  // durable
-		false, // delete when usused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
-	)
-
-	if err != nil {
-		log.WithError(err).Fatalln("error when declaring queue")
-	}
-
 	go func(stream chan<- *data.HosepipeMessage) {
 		defer close(stream)
 		for {
-			msg, ok, err := client.channel.Get(q.Name, true)
+			msg, ok, err := subscriber.client.Get(queue, true)
 			if err != nil {
 				log.WithError(err).Warnln("Error when tryig get message from rabbitmq")
 				break

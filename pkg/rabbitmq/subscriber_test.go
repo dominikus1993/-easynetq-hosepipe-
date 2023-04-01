@@ -51,7 +51,7 @@ var event string = `{
 	}
  }`
 
-func TestRabbitMqContainerPing(t *testing.T) {
+func TestSubscriber(t *testing.T) {
 	exchangeName := "test-2137"
 	queueName := "test-69420"
 	if testing.Short() {
@@ -84,18 +84,18 @@ func TestRabbitMqContainerPing(t *testing.T) {
 		conn.Close()
 	})
 
-	subscriber, err := NewRabbitMqSubscriber(conn)
-	assert.NoError(t, err)
-	t.Cleanup(func() {
-		subscriber.Close()
-	})
+	subscriber := NewRabbitMqSubscriber(conn)
 
-	err = DeclareExchange(ctx, subscriber.channel, exchangeName)
+	publisher := NewRabbitMqPublisher(conn)
+
+	err = conn.DeclareExchange(ctx, exchangeName)
 	assert.NoError(t, err)
-	err = DeclareQueue(ctx, subscriber.channel, queueName)
+	err = conn.DeclareQueue(ctx, queueName)
 	assert.NoError(t, err)
-	subscriber.channel.QueueBind(queueName, "test", exchangeName, true, amqp091.Table{})
-	subscriber.channel.PublishWithContext(ctx, exchangeName, "test", false, false, amqp091.Publishing{Body: []byte(event)})
+	err = conn.QueueBind(exchangeName, queueName, "test")
+	assert.NoError(t, err)
+	err = publisher.Publish(ctx, exchangeName, "test", amqp091.Publishing{Body: []byte(event)})
+	assert.NoError(t, err)
 
 	result := subscriber.Subscribe(ctx, queueName)
 

@@ -45,16 +45,8 @@ func main() {
 		log.WithError(err).Panicln("error when creating client")
 	}
 	defer client.Close()
-	subscriber, err := rabbitmq.NewRabbitMqSubscriber(client)
-	if err != nil {
-		log.WithError(err).Panicln("error when creating subscriber")
-	}
-	defer subscriber.Close()
-	publisher, err := rabbitmq.NewRabbitMqPublisher(client)
-	if err != nil {
-		log.WithError(err).Panicln("error when creating publisher")
-	}
-	defer publisher.CloseChannel()
+	subscriber := rabbitmq.NewRabbitMqSubscriber(client)
+	publisher := rabbitmq.NewRabbitMqPublisher(client)
 
 	rep := republisher.NewrRabbitMqPublisher(publisher)
 

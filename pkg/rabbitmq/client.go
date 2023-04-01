@@ -3,17 +3,20 @@ package rabbitmq
 import (
 	"context"
 
+	"github.com/rabbitmq/amqp091-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
 )
 
 type RabbitMqClient interface {
-	CreateChannel() (*amqp.Channel, error)
 	Close()
+	Publish(ctx context.Context, exchangeName string, topic string, msg amqp.Publishing) error
+	Get(queue string, autoAck bool) (msg amqp.Delivery, ok bool, err error)
 }
 
 type rabbitMqClient struct {
 	connection *amqp.Connection
+	channel    *amqp.Channel
 }
 
 func NewRabbitMqClient(connStr string) (*rabbitMqClient, error) {
@@ -21,11 +24,19 @@ func NewRabbitMqClient(connStr string) (*rabbitMqClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &rabbitMqClient{connection: conn}, nil
+	channel, err := conn.Channel()
+	if err != nil {
+		return nil, err
+	}
+	return &rabbitMqClient{connection: conn, channel: channel}, nil
 }
 
-func (client *rabbitMqClient) CreateChannel() (*amqp.Channel, error) {
-	return client.connection.Channel()
+func (client *rabbitMqClient) Publish(ctx context.Context, exchangeName string, topic string, msg amqp.Publishing) error {
+	return client.channel.PublishWithContext(ctx, exchangeName, topic, false, false, msg)
+}
+
+func (client *rabbitMqClient) Get(queue string, autoAck bool) (msg amqp.Delivery, ok bool, err error) {
+	return client.channel.Get(queue, autoAck)
 }
 
 func (client *rabbitMqClient) Close() {
@@ -35,8 +46,8 @@ func (client *rabbitMqClient) Close() {
 	}
 }
 
-func DeclareExchange(ctx context.Context, channel *amqp.Channel, exchangeName string) error {
-	return channel.ExchangeDeclare(
+func (client *rabbitMqClient) DeclareExchange(ctx context.Context, exchangeName string) error {
+	return client.channel.ExchangeDeclare(
 		exchangeName, // name
 		"topic",      // type
 		true,         // durable
@@ -47,8 +58,8 @@ func DeclareExchange(ctx context.Context, channel *amqp.Channel, exchangeName st
 	)
 }
 
-func DeclareQueue(ctx context.Context, channel *amqp.Channel, queueName string) error {
-	_, err := channel.QueueDeclare(
+func (client *rabbitMqClient) DeclareQueue(ctx context.Context, queueName string) error {
+	_, err := client.channel.QueueDeclare(
 		queueName, // name
 		true,      // durable
 		false,     // auto-deleted
@@ -57,4 +68,8 @@ func DeclareQueue(ctx context.Context, channel *amqp.Channel, queueName string) 
 		nil,       // arguments
 	)
 	return err
+}
+
+func (client *rabbitMqClient) QueueBind(exchange, queue, topic string) error {
+	return client.channel.QueueBind(queue, topic, exchange, true, amqp091.Table{})
 }
