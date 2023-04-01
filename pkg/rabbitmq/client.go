@@ -46,3 +46,15 @@ func DeclareExchange(ctx context.Context, channel *amqp.Channel, exchangeName st
 		nil,          // arguments
 	)
 }
+
+func DeclareQueue(ctx context.Context, channel *amqp.Channel, queueName string) error {
+	_, err := channel.QueueDeclare(
+		queueName, // name
+		true,      // durable
+		false,     // auto-deleted
+		false,     // internal
+		false,     // no-wait
+		nil,       // arguments
+	)
+	return err
+}

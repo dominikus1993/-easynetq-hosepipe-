@@ -49,7 +49,7 @@ func main() {
 	if err != nil {
 		log.WithError(err).Panicln("error when creating subscriber")
 	}
-	defer subscriber.CloseChannel()
+	defer subscriber.Close()
 	publisher, err := rabbitmq.NewRabbitMqPublisher(client)
 	if err != nil {
 		log.WithError(err).Panicln("error when creating publisher")

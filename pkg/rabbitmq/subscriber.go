@@ -2,19 +2,19 @@ package rabbitmq
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/dominikus1993/easynetq-hosepipe/pkg/data"
-	jsoniter "github.com/json-iterator/go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	log "github.com/sirupsen/logrus"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type RabbitMqSubscriber interface {
 	Subscribe(ctx context.Context, queue string) <-chan *data.HosepipeMessage
-	CloseChannel()
+	Close()
 }
 
 type rabbitMqSubscriber struct {
@@ -29,7 +29,7 @@ func NewRabbitMqSubscriber(client RabbitMqClient) (*rabbitMqSubscriber, error) {
 	return &rabbitMqSubscriber{channel: channel}, nil
 }
 
-func (client *rabbitMqSubscriber) CloseChannel() {
+func (client *rabbitMqSubscriber) Close() {
 	err := client.channel.Close()
 	if err != nil {
 		log.WithError(err).Fatalln("error when closing channel")
@@ -52,35 +52,25 @@ func (client *rabbitMqSubscriber) Subscribe(ctx context.Context, queue string) <
 		log.WithError(err).Fatalln("error when declaring queue")
 	}
 
-	msgs, err := client.channel.Consume(
-		q.Name,     // queue
-		"hosepipe", // consumer
-		true,       // auto-ack
-		false,      // exclusive
-		false,      // no-local
-		false,      // no-wait
-		nil,        // args
-	)
-
-	if err != nil {
-		log.WithError(err).Fatalln("error when consuming queue")
-	}
-
 	go func(stream chan<- *data.HosepipeMessage) {
 		defer close(stream)
 		for {
-			select {
-			case <-ctx.Done():
-				return
-			case msg := <-msgs:
-				var data data.HosepipeMessage
-				err := json.Unmarshal(msg.Body, &data)
-				if err != nil {
-					log.WithError(err).Fatalln("error when unmarshaling message")
-					continue
-				}
-				stream <- &data
+			msg, ok, err := client.channel.Get(q.Name, true)
+			if err != nil {
+				log.WithError(err).Warnln("Error when tryig get message from rabbitmq")
+				break
 			}
+			if !ok {
+				break
+			}
+			var data data.HosepipeMessage
+			err = json.Unmarshal(msg.Body, &data)
+			if err != nil {
+				log.WithError(err).Fatalln("error when unmarshaling message")
+				continue
+			}
+			stream <- &data
+
 		}
 	}(res)
 	return res
